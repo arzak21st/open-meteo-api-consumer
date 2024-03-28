@@ -1,0 +1,398 @@
+<!DOCTYPE html>
+<html
+    lang="en"
+    xmlns:th="http://www.thymeleaf.org">
+
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>Weather</title>
+
+        <link rel="stylesheet" th:href="@{/voler-master/dist/assets/css/bootstrap.css}">
+
+        <link rel="stylesheet" th:href="@{/voler-master/dist/assets/vendors/perfect-scrollbar/perfect-scrollbar.css}">
+        <link rel="stylesheet" th:href="@{/voler-master/dist/assets/css/app.css}">
+
+    </head>
+    <body onload="test()">
+        <div id="app">
+            <!--<div id="sidebar" class='active'>-->
+            <div id="sidebar">
+                <div class="sidebar-wrapper active">
+                    <div class="sidebar-menu">
+
+                        <ul class="menu">
+                            <li class="sidebar-item active">
+                                <a th:href="@{/weather}" class='sidebar-link'><i data-feather="folder" width="20"></i><span>Weather</span>
+                                </a>
+                            </li>
+                        </ul>
+
+                    </div>
+                    <button class="sidebar-toggler btn x"><i data-feather="x"></i></button>
+                </div>
+            </div>
+
+            <div id="main">
+                <nav class="navbar navbar-header navbar-expand navbar-light">
+
+                    <a class="sidebar-toggler" href="#"><span class="navbar-toggler-icon"></span></a>
+                    <button class="btn navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+                        <span class="navbar-toggler-icon"></span>
+                    </button>
+
+                    <div class="collapse navbar-collapse" id="navbarSupportedContent">
+                        <ul class="navbar-nav d-flex align-items-center navbar-light ml-auto">
+
+                        </ul>
+                    </div>
+                </nav>
+
+                <div class="main-content container-fluid">
+                    <div class="page-title">
+                        <div class="row">
+                            <div class="col-12 col-md-6">
+                                <h3>Weather</h3>
+                                <p class="text-subtitle text-muted"></p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <section id="bg-variants">
+
+                        <div class="row">
+
+                            <!-- FORM -->
+                            <div class="col-12 col-md-12 col-lg-12">
+
+                                <div class="card">
+                                    <div class="card-header">
+                                        <h4 class="card-title">Address</h4>
+                                    </div>
+
+                                    <div class="card-body">
+
+                                        <form th:action="@{/weather}" method="GET">
+
+                                            <div class="row">
+                                                <div class="col-sm-6">
+                                                    <div class="form-group">
+                                                        <!--<input type="text" id="addressInput" name="address" class="form-control" placeholder="Type address.." onkeyup="getCoordinates(document.getElementById('addressInput').value)">-->
+                                                        <select id="countrySelect" name="country" class="form-select" onchange="populateCities()" required>
+                                                            <option value="" disabled selected>Select a country</option>
+                                                        </select>
+                                                    </div>
+                                                </div>
+
+                                                <div class="col-sm-6">
+                                                    <div class="form-group">
+                                                        <select id="citySelect" name="city" class="form-select" onchange="getCoordinates()" required>
+                                                            <option value="" disabled selected>Select a city</option>
+                                                        </select>
+                                                    </div>
+                                                </div>
+                                            </div>
+
+                                            <div class="row">
+                                                <div class="col-sm-6">
+                                                    <div class="form-group">
+                                                        <input type="hidden" id="latitude" name="latitude" class="form-control" required>
+                                                    </div>
+                                                </div>
+
+                                                <div class="col-sm-6">
+                                                    <div class="form-group">
+                                                        <input type="hidden" id="longitude" name="longitude" class="form-control" required>
+                                                    </div>
+                                                </div>
+                                            </div>
+
+                                            <div class="col-sm-12">
+                                                <div class="form-group">
+                                                    <button type="submit" class="btn btn-primary col-12">Get weather</a>
+                                                </div>
+                                            </div>
+
+                                        </form>
+
+                                    </div>
+                                </div>
+
+                            </div>
+
+                            <!-- DATA -->
+                            <div class="col-12 col-md-12 col-lg-12" th:if="${selectedCountry} != '' AND ${selectedCity} != ''">
+
+                                <div class="card">
+                                    <div class="card-header">
+                                        <h4 class="card-title" th:text="${selectedCity} + ', ' + ${selectedCountry}">Marrakesh, Morocco</h4>
+                                    </div>
+
+                                    <div class="card-body">
+
+                                        <!-- CURRENT DATA -->
+                                        <div class="row match-height">
+                                            <div class="col-12 mt-3 mb-1">
+                                                <h4 class="section-title">Current</h4>
+                                            </div>
+                                        </div>
+
+                                        <div class="row">
+                                            <div class="col-xl-6 col-sm-12 col-12">
+                                                <div class="card text-center bg-primary bg-lighten-2">
+                                                    <div class="card-content d-flex">
+                                                        <div class="card-body">
+                                                            <p class="card-text" style="color: white">Local time</p>
+                                                            <h4 class="card-text" style="color: white" th:text="${#strings.replace(current.time,'T',' ')}">2024-02-15 11:30</h4>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <div class="col-xl-6 col-sm-12 col-12">
+                                                <div class="card text-center bg-primary bg-lighten-2">
+                                                    <div class="card-content d-flex">
+                                                        <div class="card-body">
+                                                            <p class="card-text" style="color: white">Status</p>
+                                                            <h4 class="card-text" style="color: white" th:text="${current.is_day} == 1 ? 'Day' : 'Night'">Day/Night</h4>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <div class="col-xl-6 col-sm-12 col-12">
+                                                <div class="card text-center bg-primary bg-lighten-2">
+                                                    <div class="card-content d-flex">
+                                                        <div class="card-body">
+                                                            <p class="card-text" style="color: white">Temperature</p>
+                                                            <h4 class="card-text" style="color: white" th:text="${current.temperature_2m} + ' ' + ${currentUnits.temperature_2m}">19.5 C</h4>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <div class="col-xl-6 col-sm-12 col-12">
+                                                <div class="card text-center bg-primary bg-lighten-2">
+                                                    <div class="card-content d-flex">
+                                                        <div class="card-body">
+                                                            <p class="card-text" style="color: white">Humidity</p>
+                                                            <h4 class="card-text" style="color: white" th:text="${current.relative_humidity_2m} + ' ' + ${currentUnits.relative_humidity_2m}">68 %</h4>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <div class="col-xl-6 col-sm-12 col-12">
+                                                <div class="card text-center bg-primary bg-lighten-2">
+                                                    <div class="card-content d-flex">
+                                                        <div class="card-body">
+                                                            <p class="card-text" style="color: white">Precipitation</p>
+                                                            <h4 class="card-text" style="color: white" th:text="${current.precipitation} + ' ' + ${currentUnits.precipitation}">0.0 mm</h4>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <div class="col-xl-6 col-sm-12 col-12">
+                                                <div class="card text-center bg-primary bg-lighten-2">
+                                                    <div class="card-content d-flex">
+                                                        <div class="card-body">
+                                                            <p class="card-text" style="color: white">Cloud cover</p>
+                                                            <h4 class="card-text" style="color: white" th:text="${current.cloud_cover} + ' ' + ${currentUnits.cloud_cover}">71 %</h4>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                        <!-- HOURLY DATA -->
+                                        <div class="row match-height">
+                                            <div class="col-12 mt-3 mb-1">
+                                                <h4 class="section-title">Hourly</h4>
+                                            </div>
+                                        </div>
+                                        <div class="row match-height">
+                                            <div class="col-12">
+                                                <div class="card-group">
+
+                                                    <div class="card bg-info" th:each="index : ${#numbers.sequence(0, hourlyListsSize / 6 - 3, 3)}"> <!-- Kind of equivalent to 'for(int index = 0; index <= 23; index = index + 3) {' | Considering that 'hourlyListsSize' is always 144 (7 days data) -->
+                                                        <div class="card-content">
+                                                            <div class="card-body">
+
+                                                                <small style="color: white">Time</small>
+                                                                <h4 class="card-title" style="color: white" th:text="${#strings.substringAfter(hourly.time[index],'T')}">10:00</h4>
+
+                                                                <small style="color: white">Temperature</small>
+                                                                <h4 class="card-title" style="color: white" th:text="${hourly.temperature_2m[index]} + ' ' + ${hourlyUnits.temperature_2m}">18.9 C</h4>
+
+                                                                <small style="color: white">Precipitation probability</small>
+                                                                <h4 class="card-title" style="color: white" th:text="${hourly.precipitation_probability[index]} + ' ' + ${hourlyUnits.precipitation_probability}">10 %</h4>
+
+                                                            </div>
+                                                        </div>
+                                                    </div>
+
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                        <!-- DAILY DATA -->
+                                        <div class="row match-height">
+                                            <div class="col-12 mt-3 mb-1">
+                                                <h4 class="section-title">Daily</h4>
+                                            </div>
+                                        </div>
+                                        <div class="row">
+
+                                            <div class="col-xl-2 col-sm-4 col-12" th:each="index : ${#numbers.sequence(0, dailyListsSize - 1, 1)}"> <!-- Kind of equivalent to 'for(int index = 0; index <= dailyListsSize; index++) {' -->
+                                                <div class="card text-center bg-secondary bg-lighten-1">
+                                                    <div class="card-content">
+                                                        <div class="card-body">
+
+                                                            <small style="color: white">Date</small>
+                                                            <h4 class="card-title" style="color: white" th:text="${daily.time[index]}">2024-02-00</h4>
+
+                                                            <small style="color: white">Temperature (Max)</small>
+                                                            <h4 class="card-title" style="color: white" th:text="${daily.temperature_2m_max[index]} + ' ' + ${dailyUnits.temperature_2m_max}">23.0 C</h4>
+
+                                                            <small style="color: white">Temperature (Min)</small>
+                                                            <h4 class="card-title" style="color: white" th:text="${daily.temperature_2m_min[index]} + ' ' + ${dailyUnits.temperature_2m_min}">15.1 C</h4>
+
+                                                            <small style="color: white">Precipitation probability</small>
+                                                            <h4 class="card-title" style="color: white" th:text="${daily.precipitation_probability_max[index]} + ' ' + ${dailyUnits.precipitation_probability_max}">0 %</h4>
+
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+
+                                        </div>
+
+                                    </div>
+                                </div>
+
+                            </div>
+
+                            <div class="col-12 col-md-12 col-lg-12">
+                                <div class="card">
+                                    <div class="card-header">
+                                        <h4 class="card-title">Data Source</h4>
+                                    </div>
+
+                                    <div class="card-body">
+                                        Weather Data Source: <a href="https://open-meteo.com/" target="_blank">Open-Meteo</a>
+                                        <br/>
+                                        World Cities Data Source: <a href="https://simplemaps.com/data/world-cities" target="_blank">World Cities Database</a>
+                                    </div>
+
+                                </div>
+                            </div>
+                    </section>
+                </div>
+
+                <footer>
+                    <div class="footer clearfix mb-0 text-muted">
+                        <div class="float-left">
+
+                        </div>
+                        <div class="float-right">
+
+                        </div>
+                    </div>
+                </footer>
+            </div>
+        </div>
+        <script th:src="@{/voler-master/dist/assets/js/feather-icons/feather.min.js}"></script>
+        <script th:src="@{/voler-master/dist/assets/vendors/perfect-scrollbar/perfect-scrollbar.min.js}"></script>
+        <script th:src="@{/voler-master/dist/assets/js/app.js}"></script>
+
+        <script th:src="@{/voler-master/dist/assets/js/main.js}"></script>
+
+        <!-- Google Places Auto-complete Script -->
+        <script th:src="@{https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.3.0/papaparse.min.js}"></script>
+
+        <script>
+
+            let cityCoordinates = {};
+
+            // Load and parse the CSV file
+            Papa.parse("world-cities/worldcities.csv", {
+                download: true,
+                header: true,
+                dynamicTyping: true,
+                complete: function (results) {
+
+                    // Store the parsed data in the cityCoordinates object
+                    cityCoordinates = results.data.reduce((acc, city) => {
+                        const country = city.country;
+                        acc[country] = acc[country] || [];
+                        acc[country].push({cityName: city.city, lat: city.lat, lng: city.lng});
+                        return acc;
+                    }, {});
+
+                    // console.log("City coordinates loaded:", cityCoordinates);
+
+                    // Populate the country select box
+                    const countrySelect = document.getElementById("countrySelect");
+                    Object.keys(cityCoordinates).forEach(country => {
+                        const option = document.createElement("option");
+                        option.value = country;
+                        option.textContent = country;
+                        countrySelect.appendChild(option);
+                    });
+                }
+            });
+
+            // Function to populate the city select box based on the selected country
+            function populateCities() {
+
+                const selectedCountry = document.getElementById("countrySelect").value;
+                const citySelect = document.getElementById("citySelect");
+
+                // Clear existing options
+                citySelect.innerHTML = '<option value="" disabled selected>Select a city</option>';
+
+                // Populate cities for the selected country
+                if (selectedCountry && cityCoordinates[selectedCountry]) {
+                    const cities = cityCoordinates[selectedCountry];
+                    cities.forEach(city => {
+                        const option = document.createElement("option");
+                        option.value = city.cityName;
+                        option.textContent = city.cityName;
+                        citySelect.appendChild(option);
+                    });
+                }
+            }
+
+            // Function to get coordinates based on selected city
+            function getCoordinates() {
+
+                const selectedCountry = document.getElementById("countrySelect").value;
+                const selectedCity = document.getElementById("citySelect").value;
+
+                if (selectedCity && selectedCountry && cityCoordinates[selectedCountry]) {
+
+                    // Find the coordinates based on the selected city name
+                    const coordinates = cityCoordinates[selectedCountry].find(city => city.cityName === selectedCity);
+
+                    if (coordinates) {
+
+                        const latitude = coordinates.lat;
+                        const longitude = coordinates.lng;
+
+                        document.getElementById("latitude").value = latitude;
+                        document.getElementById("longitude").value = longitude;
+
+                    } else {
+
+                        document.getElementById("latitude").value = '';
+                        document.getElementById("longitude").value = '';
+                        console.error("Coordinates not found for the selected city");
+                    }
+
+                } else {
+
+                    document.getElementById("latitude").value = '';
+                    document.getElementById("longitude").value = '';
+                    console.error("Please select both country and city");
+                }
+            }
+        </script>
+
+    </body>
+</html>
